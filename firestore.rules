@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string
+    //   - photoURL: string
+    //   - createdAt: timestamp
+    //
+    // Collection: logs
+    // Document ID: {logId} (usually userId_date)
+    // Fields:
+    //   - userId: string (required)
+    //   - date: string (required, YYYY-MM-DD)
+    //   - dsa: map { completed: bool, topic: string, count: int }
+    //   - gym: map { completed: bool, type: string, steps: int, progress: string }
+    //   - learning: map { completed: bool, concept: string, documentation: string }
+    //   - allCompleted: bool
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string &&
+             data.email is string;
+    }
+
+    function isValidLog(data) {
+      return data.keys().hasAll(['userId', 'date']) &&
+             data.userId is string &&
+             data.date is string &&
+             data.date.matches("^\\d{4}-\\d{2}-\\d{2}$");
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+    }
+
+    match /logs/{logId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidLog(request.resource.data);
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && isValidLog(request.resource.data);
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+  }
+}

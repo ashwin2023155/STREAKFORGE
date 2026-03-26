@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "DailyLog": {
+      "title": "DailyLog",
+      "description": "A daily entry for the triad tasks",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "dsa": {
+          "type": "object",
+          "properties": {
+            "completed": { "type": "boolean" },
+            "topic": { "type": "string" },
+            "count": { "type": "integer" }
+          }
+        },
+        "gym": {
+          "type": "object",
+          "properties": {
+            "completed": { "type": "boolean" },
+            "type": { "type": "string", "enum": ["gym", "steps"] },
+            "steps": { "type": "integer" },
+            "progress": { "type": "string" }
+          }
+        },
+        "learning": {
+          "type": "object",
+          "properties": {
+            "completed": { "type": "boolean" },
+            "concept": { "type": "string" },
+            "documentation": { "type": "string" }
+          }
+        },
+        "allCompleted": { "type": "boolean" }
+      },
+      "required": ["userId", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/logs/{logId}": {
+      "schema": "DailyLog",
+      "description": "Daily logs for each user"
+    }
+  }
+}

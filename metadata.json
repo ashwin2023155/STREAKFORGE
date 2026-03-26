@@ -1,0 +1,5 @@
+{
+  "name": "STREAKFORGE",
+  "description": "A daily tracker for DSA, Gym/Steps, and Concept Learning with a calendar view and stars for completed days.",
+  "requestFramePermissions": []
+}
